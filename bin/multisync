@@ -15,7 +15,7 @@ def stats_to_report
     'Total transferred file size', ]
 end
 
-CATALOG_FILE = 'catalog.rb'
+CATALOG_FILE = File.expand_path '~/.multisync.rb'
 
 options = { list: false, dryrun: false }
 parser = OptionParser.new do |o|
