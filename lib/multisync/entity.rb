@@ -37,10 +37,12 @@ class Multisync::Entity
   end
   
   def list level=0
-    print ''.ljust(2*level, ' ')
-    print name.bold
-    print " #{''.ljust(30-2*level-name.length, ' ').blue} #{description}" unless description == name
-    puts
+    if level > 0
+      print ''.ljust(2*(level-1), ' ')
+      print name.bold
+      print " #{''.ljust(30-2*level-name.length, ' ').blue} #{description}" unless description == name
+      puts
+    end
     members.map {|m| m.list level+1}
   end
   
