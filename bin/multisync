@@ -1,3 +1,55 @@
 #!/usr/bin/env ruby
 
 require 'multisync'
+
+require 'logger'
+require 'optparse'
+require 'text/highlight'
+String.highlighter = Text::ANSIHighlighter.new
+
+logger = Logger.new($stdout).tap do |l|
+  l.level = Logger::INFO
+  l.formatter = proc do |severity, datetime, progname, msg|
+    color = {
+      'ANY'   => :magenta, 
+      'DEBUG' => :cyan, 
+      'INFO'  => :green, 
+      'WARN'  => :yellow, 
+      'ERROR' => :red , 
+      'FATAL' => :red,
+    }[severity]
+    "#{msg}\n".send(color)
+  end
+end
+
+CATALOG_FILE = 'catalog.rb'
+
+options = { sets: ['root'], logger: logger, list: false, dryrun: false }
+parser = OptionParser.new do |o|
+  o.banner = "\nRun rsync jobs defined in the catalog file '#{CATALOG_FILE}'.\n\n"+
+             "Usage: #$0 [options] [SET] [...]\n"
+                
+  o.separator ''
+  o.on('-l', '--list', "List the catalog") do
+    options[:list] = true
+  end
+  # o.on('-l', '--log-level LEVEL', %w(debug info warn error fatal), 'Set log level.', 'Level can be one of: degug, info, warn, error fatal.', 'Default is: info.') do |v|
+  #   options[:logger].level = Logger.const_get(v.upcase)
+  # end
+  o.on('-n', '--dryrun', "Do not make any changes.") do |n|
+    options[:dryrun] = n
+  end
+  o.separator ''
+end
+parser.parse!
+
+multisync = Multisync::Catalog.load CATALOG_FILE
+if options[:list]
+  puts
+  multisync.list
+  puts
+  exit
+end
+
+sets = ARGV.empty? ? %w( root ) : ARGV
+multisync.run Multisync::Runtime.new(options), sets

@@ -1,5 +1,10 @@
 require "multisync/version"
 
 module Multisync
-  # Your code goes here...
+  autoload :Catalog, 'multisync/catalog'
+  autoload :Dsl, 'multisync/dsl'
+  autoload :Entity, 'multisync/entity'
+  autoload :Group, 'multisync/group'
+  autoload :Sync, 'multisync/sync'
+  autoload :Runtime, 'multisync/runtime'
 end
