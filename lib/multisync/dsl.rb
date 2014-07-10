@@ -27,7 +27,9 @@ module Multisync::Dsl
   end
 
   # A description for the entity
-  attr_reader :description
+  def description
+    @description || name
+  end
   
   # rsync source
   def source
