@@ -1,5 +1,5 @@
 
-require 'shellwords'
+require 'shell_cmd'
 
 class Multisync::Runtime
   
@@ -10,7 +10,7 @@ class Multisync::Runtime
   def rsync src, dest, options=[]
     cmd = ['rsync', '--stats', '--verbose', options, src, dest].flatten.map do |part|
       part.gsub(/\s+/, '\\ ')
-    end.join ' '
-    puts cmd
+    end
+    ShellCmd.new cmd
   end
 end
