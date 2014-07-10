@@ -1,6 +1,7 @@
 
 module Multisync::Dsl
 
+  # The DSL methods
   def group name, &block
     Multisync::Group.new self, name, &block
   end
@@ -26,6 +27,7 @@ module Multisync::Dsl
     @rsync_options = Array rsync_options
   end
 
+  # The accessors
   # A description for the entity
   def description
     @description || name
