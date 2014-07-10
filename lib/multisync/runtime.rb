@@ -8,12 +8,22 @@ class Multisync::Runtime
     @options = options
   end
   
+  def dryrun?
+    options[:dryrun]
+  end
+  
+  def print_command?
+    options[:print]
+  end
+  
   def rsync src, dest, rsync_options=[]
-    cmd = ['rsync', '--stats', '--verbose', rsync_options, src, dest].flatten.map do |part|
+    rsync_options.unshift *%w( --stats --verbose )
+    rsync_options.unshift '--dry-run' if dryrun?
+    cmd = ['rsync', rsync_options, src, dest].flatten.map do |part|
       part.gsub(/\s+/, '\\ ')
     end
     ShellCmd.new(cmd).tap do |c|
-      if options[:dryrun]
+      if print_command?
         puts c.cmd
       else
         c.execute do |stdout, stderr|

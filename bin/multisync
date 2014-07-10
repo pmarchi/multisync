@@ -17,17 +17,19 @@ end
 
 CATALOG_FILE = File.expand_path '~/.multisync.rb'
 
-options = { list: false, dryrun: false }
+options = { list: false, print: false, dryrun: false }
 parser = OptionParser.new do |o|
   o.banner = "\nRun rsync jobs defined in the catalog file '#{CATALOG_FILE}'.\n\n"+
              "Usage: #$0 [options] [SET] [...]\n"
-                
   o.separator ''
   o.on('-l', '--list', "List the catalog") do
     options[:list] = true
   end
-  o.on('-n', '--dryrun', "Do not make any changes.") do |n|
-    options[:dryrun] = n
+  o.on('-p', '--print', "Print the commands without executing them") do
+    options[:print] = true
+  end
+  o.on('-n', '--dryrun', "Run rsync in dry-run mode") do
+    options[:dryrun] = true
   end
   o.separator ''
 end
@@ -45,14 +47,14 @@ sets = ARGV.empty? ? %w( root ) : ARGV
 syncs = catalog.run Multisync::Runtime.new(options), sets
 
 puts
-exit if options[:dryrun]
+exit if options[:print]
 
 puts '_' * 80
 syncs.each do |sync|
   puts
   if sync.result.success?
     puts sync.description.bold.green
-    puts stdout.scan(/(?:#{stats_to_report.join('|')}):.*/)
+    puts sync.result.stdout.scan(/(?:#{stats_to_report.join('|')}):.*/)
   else
     puts "#{sync.description} (failed #{sync.result.status.exitstatus})".bold.red
     puts sync.result.stderr
