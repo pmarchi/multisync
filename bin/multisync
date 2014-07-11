@@ -17,6 +17,17 @@ end
 
 CATALOG_FILE = File.expand_path '~/.multisync.rb'
 
+unless File.exist? CATALOG_FILE
+  require 'fileutils'
+  FileUtils.cp File.expand_path('../../sample/multisync.rb', __FILE__), CATALOG_FILE
+  puts
+  puts "Sample catalog file has been created at #{CATALOG_FILE}."
+  puts "Adjust configuration to your needs."
+  puts
+  exit
+end
+
+
 options = { list: false, print: false, dryrun: false }
 parser = OptionParser.new do |o|
   o.banner = "\nRun rsync jobs defined in the catalog file '#{CATALOG_FILE}'.\n\n"+
