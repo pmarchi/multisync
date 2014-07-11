@@ -19,15 +19,21 @@ group :home do
 
   sync :pictures do
     desc "Pictures"
-    from "~/Pictures"
-    to "/Backup"
+    from "~/Pictures/Private"
+    to "/Backup/Home"
   end
 end
 
 group :work do
+  to "/Backup/Work"
+
+  sync :pictures do
+    desc "Pictures"
+    from "~/Pictures/Work"
+  end
+
   sync :doc do
     desc "Documentation"
-    from "~/work/doc"
-    to "/Backup"
+    from "~/Work/doc"
   end
 end

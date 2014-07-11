@@ -31,7 +31,13 @@ end
 options = { list: false, print: false, dryrun: false }
 parser = OptionParser.new do |o|
   o.banner = "\nRun rsync jobs defined in the catalog file '#{CATALOG_FILE}'.\n\n"+
-             "Usage: #$0 [options] [SET] [...]\n"
+             "Usage: #$0 [options] [SET] [...]\n\n"+
+             "       SET selects a section from the catalog (see option -l)\n"+
+             "       use / as a follow:\n"+
+             "       work/pictures to specify the sync defined in the group work and\n"+
+             "       home/pictures to specify the sync defined in the group home\n"+
+             "       pictures alone will select both syncs, the one in the group work\n"+
+             "       as well as the one in the group home"
   o.separator ''
   o.on('-l', '--list', "List the catalog") do
     options[:list] = true
