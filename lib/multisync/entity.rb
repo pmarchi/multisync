@@ -3,14 +3,6 @@ class Multisync::Entity
   
   include Multisync::Dsl
 
-  class Toplevel
-    def register member; end
-    def fullname; nil; end
-    def rsync_options; []; end
-    def source; raise "no source (from) defined"; end
-    def destination; raise "no destination (to) defined"; end
-  end
-
   # The parent of the group
   attr_reader :parent
   
@@ -20,7 +12,7 @@ class Multisync::Entity
   # All members (groups or syncs) of this group
   attr_reader :members
   
-  def initialize parent=Toplevel.new, name='root', &block
+  def initialize parent=Multisync::Toplevel.new, name='root', &block
     @parent = parent
     @name = name.to_s
     @members = []
