@@ -12,6 +12,8 @@ class Multisync::Sync < Multisync::Entity
   end
   
   def run? sets
-    sets.any? {|s| /\b#{s}\b/.match fullname }
+    sets.empty? ?
+      default_set? :
+      sets.any? {|s| /\b#{s}\b/.match fullname }
   end
 end

@@ -60,7 +60,7 @@ if options[:list]
   exit
 end
 
-sets = ARGV.empty? ? %w( root ) : ARGV
+sets = ARGV
 syncs = catalog.run Multisync::Runtime.new(options), sets
 
 puts

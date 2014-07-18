@@ -26,6 +26,10 @@ module Multisync::Dsl
     @rsync_options_mode = mode
     @rsync_options = Array rsync_options
   end
+  
+  def default
+    @default_set = true
+  end
 
   # The accessors
   # A description for the entity
@@ -48,5 +52,10 @@ module Multisync::Dsl
     opts = @rsync_options || []
     return opts if @rsync_options_mode == :override
     parent.rsync_options + opts
+  end
+  
+  # run this group/sync by default (when no set is defined)
+  def default_set?
+    @default_set || parent.default_set?
   end
 end
