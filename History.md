@@ -1,6 +1,9 @@
 
 # multisync
 
+## v0.1.2 (2014-08-29)
+- Mark default sets with an * when listing
+
 ## v0.1.1 (2014-08-28)
 - Add gem dependecy 'text-highlight'
 
