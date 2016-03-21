@@ -2,24 +2,14 @@
 class Multisync::Sync < Multisync::Entity
 
   # State, set after run (could be nil, :skipped, :run)
-  attr_reader :state
+  attr_accessor :state
   
   # Result after run
-  attr_reader :result
+  attr_accessor :result
   
+  # Will set state and result on self
   def run runtime
-    puts
-    puts description.bold.cyan
-
-    unless check_passed?
-      puts check_cmd + ' (failed)'
-      @state = :skipped
-    end
-    
-    if check_passed? || runtime.show_only?
-      @result = runtime.rsync source, destination, rsync_options
-      @state = :run
-    end
+    runtime.rsync self
   end
 
   def select sets
