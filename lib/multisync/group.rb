@@ -1,8 +1,10 @@
 
 class Multisync::Group < Multisync::Entity
-  def run runtime, sets
-    members.map do |member|
-      member.run runtime, sets
-    end.flatten.compact
+  def select sets
+    members.each do |member|
+      member.select sets do |sync|
+        yield sync if sync
+      end
+    end
   end
 end

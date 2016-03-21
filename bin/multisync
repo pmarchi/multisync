@@ -28,7 +28,7 @@ unless File.exist? CATALOG_FILE
 end
 
 
-options = { list: false, print: false, dryrun: false }
+options = { list: false, show: false, dryrun: false }
 parser = OptionParser.new do |o|
   o.banner = "\nRun rsync jobs defined in the catalog file '#{CATALOG_FILE}'.\n\n"+
              "Usage: #$0 [options] [SET] [...]\n\n"+
@@ -42,8 +42,8 @@ parser = OptionParser.new do |o|
   o.on('-l', '--list', "List the catalog") do
     options[:list] = true
   end
-  o.on('-p', '--print', "Print the commands without executing them") do
-    options[:print] = true
+  o.on('-p', '--show', "Print the commands without executing them") do
+    options[:show] = true
   end
   o.on('-n', '--dryrun', "Run rsync in dry-run mode") do
     options[:dryrun] = true
@@ -51,7 +51,9 @@ parser = OptionParser.new do |o|
   o.separator ''
 end
 parser.parse!
+sets = ARGV
 
+# List catalog
 catalog = Multisync::Catalog.load CATALOG_FILE
 if options[:list]
   puts
@@ -60,21 +62,39 @@ if options[:list]
   exit
 end
 
-sets = ARGV
-syncs = catalog.run Multisync::Runtime.new(options), sets
+# Show commands
+if options[:show]
+  catalog.select sets do |sync|
+    puts
+    puts sync.description.bold.cyan
+    puts sync.cmd
+  end
+  exit
+end
 
-puts
-exit if options[:print]
+# Run syncs
+runtime = Multisync::Runtime.new(options)
+catalog.select sets do |sync|
+  sync.run runtime
+end
 
+# Summarization
 puts '_' * 80
-syncs.each do |sync|
+catalog.select sets do |sync|
   puts
-  if sync.result.success?
-    puts sync.description.bold.green
-    puts sync.result.stdout.scan(/(?:#{stats_to_report.join('|')}):.*/)
+  case sync.state
+  when :run
+    if sync.result.success?
+      puts sync.description.bold.green
+      puts sync.result.stdout.scan(/(?:#{stats_to_report.join('|')}):.*/)
+    else
+      puts "#{sync.description} (failed #{sync.result.status.exitstatus})".bold.red
+      puts sync.result.stderr
+    end
+  when :skipped
+    puts "#{sync.description} (skipped)".bold.yellow
+    puts sync.check_message
   else
-    puts "#{sync.description} (failed #{sync.result.status.exitstatus})".bold.red
-    puts sync.result.stderr
   end
 end
 puts

@@ -13,10 +13,6 @@ class Multisync::Runtime
     options[:dryrun]
   end
   
-  def print_command?
-    options[:print]
-  end
-  
   def rsync src, dest, rsync_options=[]
     rsync_options.unshift *%w( --stats --verbose )
     rsync_options.unshift '--dry-run' if dryrun?
@@ -25,13 +21,10 @@ class Multisync::Runtime
       [src, dest].map {|path| path.gsub(/\s+/, '\\ ') }
     ).flatten
 
+    puts cmd.join(' ') if dryrun?
     ShellCmd.new(cmd).tap do |c|
-      if print_command?
-        puts c.cmd
-      else
-        c.execute do |stdout, stderr|
-          print (stdout) ? stdout : stderr
-        end
+      c.execute do |stdout, stderr|
+        print (stdout) ? stdout : stderr
       end
     end
   end
