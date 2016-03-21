@@ -11,19 +11,17 @@ class Multisync::Sync < Multisync::Entity
     puts
     puts description.bold.cyan
 
-    if check_passed?
-      @result = runtime.rsync source, destination, rsync_options
-      @state = :run
-    else
+    unless check_passed?
       puts check_cmd + ' (failed)'
       @state = :skipped
     end
+    
+    if check_passed? || runtime.show_only?
+      @result = runtime.rsync source, destination, rsync_options
+      @state = :run
+    end
   end
-  
-  def cmd
-    ['rsync', rsync_options, source, destination].join(' ')
-  end
-  
+
   def select sets
     yield self if selected?(sets)
   end

@@ -42,7 +42,7 @@ parser = OptionParser.new do |o|
   o.on('-l', '--list', "List the catalog") do
     options[:list] = true
   end
-  o.on('-p', '--show', "Print the commands without executing them") do
+  o.on('-s', '--show', "Print the commands without executing them") do
     options[:show] = true
   end
   o.on('-n', '--dryrun', "Run rsync in dry-run mode") do
@@ -62,21 +62,13 @@ if options[:list]
   exit
 end
 
-# Show commands
-if options[:show]
-  catalog.select sets do |sync|
-    puts
-    puts sync.description.bold.cyan
-    puts sync.cmd
-  end
-  exit
-end
-
-# Run syncs
+# Run syncs, run handles "normal run", "dry run" and "show only command"
 runtime = Multisync::Runtime.new(options)
 catalog.select sets do |sync|
   sync.run runtime
 end
+puts
+exit if options[:show]
 
 # Summarization
 puts '_' * 80
