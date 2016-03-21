@@ -62,7 +62,7 @@ if options[:list]
   exit
 end
 
-# Run syncs, run handles "normal run", "dry run" and "show only command"
+# Runtime handles "normal run", "dry run" and "show only command"
 runtime = Multisync::Runtime.new(options)
 catalog.select sets do |sync|
   sync.run runtime
