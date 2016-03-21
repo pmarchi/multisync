@@ -11,8 +11,8 @@ class Multisync::Entity
   
   # All members (groups or syncs) of this group
   attr_reader :members
-  
-  def initialize parent=Multisync::Toplevel.new, name='root', &block
+
+  def initialize parent=Multisync::Toplevel.new, name=:root, &block
     @parent = parent
     @name = name.to_s
     @members = []
