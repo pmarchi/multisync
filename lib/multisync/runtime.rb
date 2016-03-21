@@ -45,7 +45,7 @@ class Multisync::Runtime
     else
       sync.state = :skipped
       puts sync.check_cmd + ' (failed)'
-      puts "Skip: " + shell_cmd.cmd if show_only?
+      puts "Skip: ".bold.yellow + shell_cmd.cmd if show_only?
     end
 
   end
