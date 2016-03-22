@@ -1,6 +1,10 @@
 
 # multisync
 
+## v0.2.0 (2016-03-22)
+- New: option only_if for preflight checks, prior to sync
+- Command line option -p/--print changed to --show
+
 ## v0.1.2 (2014-08-29)
 - Mark default sets with an * when listing
 
