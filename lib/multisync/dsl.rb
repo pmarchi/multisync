@@ -36,53 +36,14 @@ module Multisync::Dsl
     @check_cmd = cmd
     @check_message = options.fetch(:message, cmd)
   end
-
-  # The accessors
-  # A description for the entity
-  def description
-    @description || name
+  
+  # Check source's host or path before sync
+  def check_from flag=true
+    @check_from = flag
   end
   
-  # rsync source
-  def source
-    @source || parent.source
-  end
-  
-  # rsync destination
-  def destination
-    @destination || parent.destination
-  end
-  
-  # rsync options
-  def rsync_options
-    opts = @rsync_options || []
-    return opts if @rsync_options_mode == :override
-    parent.rsync_options + opts
-  end
-  
-  # run this group/sync by default (when no set is defined)
-  def default_set?
-    @default_set || parent.default_set?
-  end
-  
-  # Run this group/sync only if all checks passed
-  def check_passed?
-    parent.check_passed? && check
-  end
-  
-  # Return the message of the check that failed
-  def check_message
-    parent.check_passed? ? @check_message : parent.check_message
-  end
-  
-  # Return the cmd of the check that failed
-  def check_cmd
-    parent.check_passed? ? @check_cmd : parent.check_cmd
-  end
-  
-  # Perform the actual check
-  def check
-    @check_passed = (@check_cmd ? system(@check_cmd) : true) if @check_passed.nil?
-    @check_passed
+  # Check destination's host or path before sync
+  def check_to flag=true
+    @check_to = flag
   end
 end
