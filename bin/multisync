@@ -3,17 +3,8 @@
 require 'multisync'
 
 require 'optparse'
-require 'text/highlight'
-String.highlighter = Text::ANSIHighlighter.new
-
-def stats_to_report
-  [ 'Number of files',
-    'Number of created files',
-    'Number of deleted files',
-    'Number of regular files transferred',
-    'Total file size',
-    'Total transferred file size', ]
-end
+require 'rainbow/ext/string'
+require 'terminal-table'
 
 CATALOG_FILE = File.expand_path '~/.multisync.rb'
 
@@ -71,22 +62,46 @@ puts
 exit if options[:show]
 
 # Summarization
-puts '_' * 80
+table = Terminal::Table.new
+table.style = { 
+  border_top: false,  border_bottom: false, 
+  border_x: '–', border_y: '', border_i: '', 
+  padding_left: 0, padding_right: 2,
+}
+table.headings = %w( Description Files + - → ∑ → ).zip(%i( left right right right right right right )).map{|v,a| {value: v, alignment: a} } 
+
 catalog.select sets do |sync|
-  puts
   case sync.state
   when :run
     if sync.result.success?
-      puts sync.description.bold.green
-      puts sync.result.stdout.scan(/(?:#{stats_to_report.join('|')}):.*/)
+      # successfull run
+      stat = Multisync::RsyncStat.new(sync.result.stdout).parse
+      table.add_row [
+        sync.description.color(:green),
+        { value: stat.files, alignment: :right },
+        { value: stat.created, alignment: :right },
+        { value: stat.deleted, alignment: :right },
+        { value: stat.transferred, alignment: :right },
+        { value: stat.file_size, alignment: :right },
+        { value: stat.transferred_size, alignment: :right },
+      ]
     else
-      puts "#{sync.description} (failed #{sync.result.status.exitstatus})".bold.red
-      puts sync.result.stderr
+      # failed run
+      table.add_row [
+        sync.description.color(:red),
+        { value: sync.result.stderr.strip.color(:red).faint, colspan: 6 }
+      ]
     end
   when :skipped
-    puts "#{sync.description} (skipped)".bold.yellow
-    puts sync.check_message
-  else
+    # skiped sync
+    table.add_row [
+      sync.description.color(:yellow),
+      {value: sync.check_message.color(:yellow).faint, colspan: 6 }
+    ]
   end
 end
+
+puts
+puts
+puts table
 puts

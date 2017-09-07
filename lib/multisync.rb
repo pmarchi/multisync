@@ -8,4 +8,5 @@ module Multisync
   autoload :Sync, 'multisync/sync'
   autoload :Toplevel, 'multisync/toplevel'
   autoload :Runtime, 'multisync/runtime'
+  autoload :RsyncStat, 'multisync/rsync_stat'
 end
