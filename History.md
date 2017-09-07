@@ -1,6 +1,11 @@
 
 # multisync
 
+## v0.?.? (2017-09-??)
+- New: option "check_from" and "check_to" to let check host or path before sync
+- Change summery output to a more compact tabular form
+- Use rainbow for colorization
+
 ## v0.2.0 (2016-03-22)
 - New: option only_if for preflight checks, prior to sync
 - Command line option -p/--print changed to --show
