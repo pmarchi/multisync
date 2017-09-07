@@ -32,5 +32,14 @@ class Multisync::Toplevel
   def check_cmd
     false
   end
+  
+  # Turn off source and destination checks on toplevel.
+  # Set check_from|check_to at root level to turn on globally.
+  def check_from?
+    false
+  end  
+  def check_to?
+    false
+  end
 end
 
