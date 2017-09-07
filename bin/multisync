@@ -68,7 +68,7 @@ table.style = {
   border_x: '–', border_y: '', border_i: '', 
   padding_left: 0, padding_right: 2,
 }
-table.headings = %w( Description Files + - → ∑ → ).zip(%i( left right right right right right right )).map{|v,a| {value: v, alignment: a} } 
+table.headings = %w( Summary Files + - → ∑ → ).zip(%i( left right right right right right right )).map{|v,a| {value: v, alignment: a} } 
 
 catalog.select sets do |sync|
   case sync.state
