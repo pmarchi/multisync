@@ -1,13 +1,6 @@
 
 class Multisync::Sync < Multisync::Entity
 
-  # State, set after run (could be nil, :skipped, :run)
-  attr_accessor :state
-  
-  # Result after run
-  attr_accessor :result
-  
-  # Will set state and result on self
   def run runtime
     runtime.rsync self
   end

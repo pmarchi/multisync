@@ -14,12 +14,16 @@ module Multisync::Dsl
     @description = description
   end
   
-  def from source
+  def from source, options={}
     @source = source
+    # Check source's host or path before sync
+    @check_from = options[:check] unless options[:check].nil?
   end
   
-  def to destination
+  def to destination, options={}
     @destination = destination
+    # Check destination's host or path before sync
+    @check_to = options[:check] unless options[:check].nil?
   end
   
   def options rsync_options, mode=:append
@@ -38,11 +42,13 @@ module Multisync::Dsl
   end
   
   # Check source's host or path before sync
+  # can also be set as option of "from"
   def check_from flag=true
     @check_from = flag
   end
   
   # Check destination's host or path before sync
+  # can also be set as option of "to"
   def check_to flag=true
     @check_to = flag
   end

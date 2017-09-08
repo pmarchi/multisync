@@ -66,37 +66,37 @@ table = Terminal::Table.new
 table.style = { 
   border_top: false,  border_bottom: false, 
   border_x: '–', border_y: '', border_i: '', 
-  padding_left: 0, padding_right: 2,
+  padding_left: 0, padding_right: 3,
 }
 table.headings = %w( Summary Files + - → ∑ → ).zip(%i( left right right right right right right )).map{|v,a| {value: v, alignment: a} } 
 
-catalog.select sets do |sync|
-  case sync.state
+runtime.results.each do |result|
+  case result[:action]
   when :run
-    if sync.result.success?
+    if result[:result].success?
       # successfull run
-      stat = Multisync::RsyncStat.new(sync.result.stdout).parse
+      stat = Multisync::RsyncStat.new(result[:result].stdout).parse
       table.add_row [
-        sync.description.color(:green),
-        { value: stat.files, alignment: :right },
-        { value: stat.created, alignment: :right },
-        { value: stat.deleted, alignment: :right },
-        { value: stat.transferred, alignment: :right },
-        { value: stat.file_size, alignment: :right },
-        { value: stat.transferred_size, alignment: :right },
+        result[:description],#.color(:green),
+        { value: stat.files.color(:green), alignment: :right },
+        { value: stat.created.color(:green), alignment: :right },
+        { value: stat.deleted.color(:green), alignment: :right },
+        { value: stat.transferred.color(:green), alignment: :right },
+        { value: stat.file_size.color(:green), alignment: :right },
+        { value: stat.transferred_size.color(:green), alignment: :right },
       ]
     else
       # failed run
       table.add_row [
-        sync.description.color(:red),
-        { value: sync.result.stderr.strip.color(:red).faint, colspan: 6 }
+        result[:description],#.color(:red),
+        { value: result[:result].stderr.strip.color(:red), colspan: 6 }
       ]
     end
-  when :skipped
+  when :skip
     # skiped sync
     table.add_row [
-      sync.description.color(:yellow),
-      {value: sync.check_message.color(:yellow).faint, colspan: 6 }
+      result[:description],#.color(:yellow),
+      {value: result[:skip_message].color(:yellow), colspan: 6 }
     ]
   end
 end
