@@ -36,6 +36,8 @@ class Multisync::Runtime
   
   def rsync sync
     result = { name: sync.name, description: sync.description }
+    results << result
+
     rsync_options = sync.rsync_options.dup
     rsync_options.unshift *%w( --stats --verbose )
     rsync_options.unshift '--dry-run' if dryrun?
@@ -58,7 +60,6 @@ class Multisync::Runtime
       puts "Skip: ".color(:yellow) + shell.cmd
       result[:action] = :skip
       result[:skip_message] = check[:message]
-      results << result
       return
     end
     
@@ -68,7 +69,6 @@ class Multisync::Runtime
       puts "Skip: ".color(:yellow) + shell.cmd
       result[:action] = :skip
       result[:skip_message] = "Source is not accessible"
-      results << result
       return
     end
     
@@ -78,7 +78,6 @@ class Multisync::Runtime
       puts "Skip: ".color(:yellow) + shell.cmd
       result[:action] = :skip
       result[:skip_message] = "Destination is not accessible"
-      results << result
       return
     end
       
@@ -91,8 +90,6 @@ class Multisync::Runtime
         print (stdout) ? stdout : stderr
       end
     end
-    
-    results << result
   end
   
   # checks a path
