@@ -72,25 +72,9 @@ class Multisync::Entity
     @default_set || parent.default_set?
   end
   
-  # Run this group/sync only if all checks passed
-  def check_passed?
-    parent.check_passed? && check
-  end
-  
-  # Return the message of the check that failed
-  def check_message
-    parent.check_passed? ? @check_message : parent.check_message
-  end
-  
-  # Return the cmd of the check that failed
-  def check_cmd
-    parent.check_passed? ? @check_cmd : parent.check_cmd
-  end
-  
-  # Perform the actual check
-  def check
-    @check_passed = (@check_cmd ? system(@check_cmd) : true) if @check_passed.nil?
-    @check_passed
+  # All checks from parent to child
+  def checks
+    (parent.checks + [@check]).compact
   end
   
   # Should source's host or path be checked before sync?

@@ -49,12 +49,15 @@ class Multisync::Runtime
     puts
     puts sync.description.color(:cyan)
     
-    # only_if checks
-    unless sync.check_passed?
-      puts sync.check_cmd + ' (failed)'
+    # Perform all only_if checks, from top to bottom
+    sync.checks.each do |check|
+      _, status = Open3.capture2e check[:cmd]
+      next if status.success?
+
+      puts check[:cmd] + ' (failed)'
       puts "Skip: ".color(:yellow) + shell.cmd
       result[:action] = :skip
-      result[:skip_message] = sync.check_message
+      result[:skip_message] = check[:message]
       results << result
       return
     end
@@ -100,7 +103,7 @@ class Multisync::Runtime
   def check_path path, type = :source
     if path.include? ':'
       host = path.split(':').first.split('@').last
-      _, status = Open3.capture2 "ping -o -t 1 #{host}"
+      _, status = Open3.capture2e "ping -o -t 1 #{host}"
       status.success?
     else
       path = File.dirname path if type == :destination

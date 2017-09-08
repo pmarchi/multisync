@@ -37,8 +37,7 @@ module Multisync::Dsl
   
   # Defines a check, that should pass in order to invoke the sync
   def only_if cmd, options={}
-    @check_cmd = cmd
-    @check_message = options.fetch(:message, cmd)
+    @check = { cmd: cmd, message: options.fetch(:message, cmd) }
   end
   
   # Check source's host or path before sync

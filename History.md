@@ -1,10 +1,12 @@
 
 # multisync
 
-## v0.?.? (2017-09-??)
+## v0.2.1 (2017-09-08)
 - New: option "check_from" and "check_to" to let check host or path before sync
+- New: "from" and "to" accept an optional check: true|false
 - Change summery output to a more compact tabular form
 - Use rainbow for colorization
+- Move only_if checks to runtime
 
 ## v0.2.0 (2016-03-22)
 - New: option only_if for preflight checks, prior to sync
