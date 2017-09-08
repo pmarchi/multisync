@@ -58,6 +58,7 @@ runtime = Multisync::Runtime.new(options)
 catalog.select sets do |sync|
   sync.run runtime
 end
+exit if runtime.results.empty?
 puts
 exit if options[:show]
 
