@@ -103,8 +103,9 @@ class Multisync::Runtime
       _, status = Open3.capture2e "ping -o -t 1 #{host}"
       status.success?
     else
-      path = File.dirname path if type == :destination
-      File.exist? path
+      abs_path = File.expand_path path
+      abs_path = File.dirname abs_path if type == :destination
+      File.exist? abs_path
     end
   end
 end
