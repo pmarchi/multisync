@@ -1,7 +1,7 @@
 
 # multisync
 
-## v0.2.1 (2017-09-08)
+## v0.2.1 (2017-09-22)
 - New: option "check_from" and "check_to" to let check host or path before sync
 - New: "from" and "to" accept an optional check: true|false parameter
 - Change summery output to a more compact tabular form
