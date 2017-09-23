@@ -1,6 +1,9 @@
 
 # multisync
 
+## v0.2.3 (2017-09-23)
+- Fix: check remote path
+
 ## v0.2.2 (2017-09-23)
 - replaced shell_cmd gem with mixlib-shellout
 - Fix: check path for paths containing spaces
