@@ -1,6 +1,9 @@
 
 # multisync
 
+## v0.2.4 (2017-09-23)
+- Fix: check command
+
 ## v0.2.3 (2017-09-23)
 - Fix: check remote path
 
