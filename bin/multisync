@@ -22,7 +22,7 @@ end
 options = { list: false, show: false, dryrun: false }
 parser = OptionParser.new do |o|
   o.banner = "\nRun rsync jobs defined in the catalog file '#{CATALOG_FILE}'.\n\n"+
-             "Usage: #$0 [options] [SET] [...]\n\n"+
+             "Usage: #{File.basename $0} [options] [SET] [...]\n\n"+
              "       SET selects a section from the catalog (see option -l)\n"+
              "       use / as a follow:\n"+
              "       work/pictures to specify the sync defined in the group work and\n"+
