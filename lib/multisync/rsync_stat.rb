@@ -28,6 +28,17 @@ class Multisync::RsyncStat
     @scan ||= @output.scan(/(#{definitions.map{|d| d[:match] }.join('|')}):\s+([,0-9]+)/).each_with_object({}) {|(k,v), o| o[k] = v }
   end
   
+  def to_a
+    [
+      @stats[:files],
+      @stats[:created],
+      @stats[:deleted],
+      @stats[:transferred],
+      @stats[:file_size],
+      @stats[:transferred_size],
+    ]
+  end
+  
   def method_missing name
     key = name.to_sym
     return @stats[key] if @stats.keys.include? key
@@ -41,7 +52,7 @@ class Multisync::RsyncStat
       { key: :deleted, match: 'Number of deleted files', coerce: ->(x) { x.gsub(',',"'") }, default: '0' },
       { key: :transferred, match: 'Number of regular files transferred', coerce: ->(x) { x.gsub(',',"'") }, default: '0' },
       { key: :file_size, match: 'Total file size', coerce: ->(x) { Filesize.new(x.gsub(',','').to_i).pretty }, default: '0 B' },
-      { key: :transferred_size, match: 'Total transferred file size', coerce: ->(x) { Filesize.new(x.gsub(',','').to_i).pretty }, default: '0' },
+      { key: :transferred_size, match: 'Total transferred file size', coerce: ->(x) { Filesize.new(x.gsub(',','').to_i).pretty }, default: '0 B' },
     ]
   end
 end
