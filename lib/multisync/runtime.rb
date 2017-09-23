@@ -54,7 +54,7 @@ class Multisync::Runtime
     
     # Perform all only_if checks, from top to bottom
     sync.checks.each do |check|
-      next unless Mixlib::ShellOut(check[:cmd]).run_command.error?
+      next unless Mixlib::ShellOut.new(check[:cmd]).run_command.error?
 
       puts check[:cmd] + ' (failed)'
       puts "Skip: ".color(:yellow) + rsync.command
