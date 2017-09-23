@@ -101,7 +101,7 @@ class Multisync::Runtime
   def check_path path, type = :source
     if path.include? ':'
       host = path.split(':').first.split('@').last
-      Mixlib::ShellOut("ping -o -t 1 #{host}").run_command.status.success?
+      Mixlib::ShellOut.new("ping -o -t 1 #{host}").run_command.status.success?
     else
       abs_path = File.expand_path path
       abs_path = File.dirname abs_path if type == :destination
