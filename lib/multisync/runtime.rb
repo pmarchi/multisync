@@ -1,7 +1,5 @@
 
-require 'open3'
-require 'shellwords'
-require 'shell_cmd'
+require 'mixlib/shellout'
 
 class Multisync::Runtime
 
@@ -16,7 +14,9 @@ class Multisync::Runtime
   #    description: 'Source > Destination',
   #    cmd: 'rsync --stats -v source destination',
   #    action: :run,
-  #    result: #<ShellCmd:0x007fdf88947838 ...>,
+  #    result: #<Process::Status: pid 65416 exit 0>,
+  #    stdout: '',
+  #    stderr: '',
   #    skip_message: 'host not reachable',
   #  }
   attr_reader :results
@@ -41,54 +41,55 @@ class Multisync::Runtime
     rsync_options = sync.rsync_options.dup
     rsync_options.unshift *%w( --stats --verbose )
     rsync_options.unshift '--dry-run' if dryrun?
-    
-    source, destination = [sync.source, sync.destination].map {|path| path.gsub(/\s+/, '\\ ') }
-    cmd = ['rsync', rsync_options, source, destination].flatten
 
-    shell = ShellCmd.new(cmd)
-    result[:cmd] = shell.cmd
+    # escape path by hand, shellescape escapes also ~, but we want to keep its
+    # special meaning for home, instead of passing it as literal char
+    source, destination = [sync.source, sync.destination].map {|path| path.gsub(/\s+/, '\\ ') }
+    cmd = "rsync #{rsync_options.join(' ')} #{source} #{destination}"
+    rsync = Mixlib::ShellOut.new(cmd, live_stdout: $stdout, live_stderr: $stderr)
+    result[:cmd] = rsync.command
     
     puts
     puts sync.description.color(:cyan)
     
     # Perform all only_if checks, from top to bottom
     sync.checks.each do |check|
-      _, status = Open3.capture2e check[:cmd]
-      next if status.success?
+      next unless Mixlib::ShellOut(check[:cmd]).run_command.error?
 
       puts check[:cmd] + ' (failed)'
-      puts "Skip: ".color(:yellow) + shell.cmd
+      puts "Skip: ".color(:yellow) + rsync.command
       result[:action] = :skip
       result[:skip_message] = check[:message]
       return
     end
     
     # source check
-    if sync.check_from? && ! check_path(source, :source)
-      puts "Source #{source} is not accessible"
-      puts "Skip: ".color(:yellow) + shell.cmd
+    if sync.check_from? && ! check_path(sync.source, :source)
+      puts "Source #{sync.source} is not accessible"
+      puts "Skip: ".color(:yellow) + rsync.command
       result[:action] = :skip
       result[:skip_message] = "Source is not accessible"
       return
     end
     
     # target check
-    if sync.check_to? && ! check_path(destination, :destination)
-      puts "Destination #{destination} is not accessible"
-      puts "Skip: ".color(:yellow) + shell.cmd
+    if sync.check_to? && ! check_path(sync.destination, :destination)
+      puts "Destination #{sync.destination} is not accessible"
+      puts "Skip: ".color(:yellow) + rsync.command
       result[:action] = :skip
       result[:skip_message] = "Destination is not accessible"
       return
     end
       
     if show_only?
-      puts shell.cmd
+      puts rsync.command
     else
       result[:action] = :run
-      puts shell.cmd if dryrun?
-      result[:result] = shell.execute do |stdout, stderr|
-        print (stdout) ? stdout : stderr
-      end
+      puts rsync.command if dryrun?
+      rsync.run_command
+      result[:status] = rsync.status
+      result[:stdout] = rsync.stdout
+      result[:stderr] = rsync.stderr
     end
   end
   
@@ -100,8 +101,7 @@ class Multisync::Runtime
   def check_path path, type = :source
     if path.include? ':'
       host = path.split(':').first.split('@').last
-      _, status = Open3.capture2e "ping -o -t 1 #{host}"
-      status.success?
+      Mixlib::ShellOut("ping -o -t 1 #{host}").run_command.status.success?
     else
       abs_path = File.expand_path path
       abs_path = File.dirname abs_path if type == :destination

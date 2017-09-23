@@ -74,30 +74,25 @@ table.headings = %w( Summary Files + - → ∑ ↑ ).zip(%i( left right right ri
 runtime.results.each do |result|
   case result[:action]
   when :run
-    if result[:result].success?
+    if result[:status].success?
       # successfull run
-      stat = Multisync::RsyncStat.new(result[:result].stdout).parse
+      stat = Multisync::RsyncStat.new(result[:stdout]).parse
       table.add_row [
-        result[:description],#.color(:green),
-        { value: stat.files.color(:green), alignment: :right },
-        { value: stat.created.color(:green), alignment: :right },
-        { value: stat.deleted.color(:green), alignment: :right },
-        { value: stat.transferred.color(:green), alignment: :right },
-        { value: stat.file_size.color(:green), alignment: :right },
-        { value: stat.transferred_size.color(:green), alignment: :right },
+        result[:description],
+        *stat.to_a.map{|e| {value: e.color(:green), alignment: :right} }
       ]
     else
       # failed run
       table.add_row [
-        result[:description],#.color(:red),
-        { value: result[:result].stderr.strip.color(:red), colspan: 6 }
+        result[:description],
+        { value: result[:stderr].strip.color(:red), colspan: 6 }
       ]
     end
   when :skip
     # skiped sync
     table.add_row [
-      result[:description],#.color(:yellow),
-      {value: result[:skip_message].color(:yellow), colspan: 6 }
+      result[:description],
+      { value: result[:skip_message].color(:yellow), colspan: 6 }
     ]
   end
 end

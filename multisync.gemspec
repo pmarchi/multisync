@@ -18,7 +18,7 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.add_runtime_dependency "shell_cmd"
+  spec.add_runtime_dependency "mixlib-shellout"
   spec.add_runtime_dependency "filesize"
   spec.add_runtime_dependency "rainbow"
   spec.add_runtime_dependency "terminal-table"
