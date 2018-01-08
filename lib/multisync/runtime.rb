@@ -46,7 +46,7 @@ class Multisync::Runtime
     # special meaning for home, instead of passing it as literal char
     source, destination = [sync.source, sync.destination].map {|path| path.gsub(/\s+/, '\\ ') }
     cmd = "rsync #{rsync_options.join(' ')} #{source} #{destination}"
-    rsync = Mixlib::ShellOut.new(cmd, live_stdout: $stdout, live_stderr: $stderr)
+    rsync = Mixlib::ShellOut.new(cmd, live_stdout: $stdout, live_stderr: $stderr, timeout: 36000)
     result[:cmd] = rsync.command
     
     puts
