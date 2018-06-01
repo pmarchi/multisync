@@ -10,6 +10,15 @@ module Multisync::Definition::Dsl
     Multisync::Definition::Entity.new self, name, &block
   end
   
+  def template name, &block
+    Multisync::Definition::Template.new name, &block
+  end
+  
+  def include name
+    template = Multisync::Definition::Template.lookup name
+    instance_eval &template.block
+  end
+  
   def from value, options={}
     @from_value = value
     # Check source's host or path before sync
@@ -41,12 +50,12 @@ module Multisync::Definition::Dsl
   # Check source's host or path before sync
   # can also be set as option of "from"
   def check_from flag=true
-    @check_from = flag
+    @from_check = flag
   end
   
   # Check destination's host or path before sync
   # can also be set as option of "to"
   def check_to flag=true
-    @check_to = flag
+    @to_check = flag
   end
 end
