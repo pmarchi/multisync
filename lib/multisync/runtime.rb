@@ -20,16 +20,25 @@ class Multisync::Runtime
     options[:print]
   end
   
+  def quiet?
+    options[:quiet]
+  end
+  
+  def timeout
+    options[:timeout]
+  end
+  
   def run sync
     rsync_options = sync.rsync_options.dup
-    rsync_options.unshift *%w( --stats --verbose )
+    rsync_options.unshift '--stats'
+    rsync_options.unshift '--verbose' unless quiet?
     rsync_options.unshift '--dry-run' if dryrun?
 
     # escape path by hand, shellescape escapes also ~, but we want to keep its
     # special meaning for home, instead of passing it as literal char
     source, destination = [sync.source, sync.destination].map {|path| path.gsub(/\s+/, '\\ ') }
     cmd = "rsync #{rsync_options.join(' ')} #{source} #{destination}"
-    rsync = Mixlib::ShellOut.new(cmd, live_stdout: $stdout, live_stderr: $stderr, timeout: 36000)
+    rsync = Mixlib::ShellOut.new(cmd, live_stdout: $stdout, live_stderr: $stderr, timeout: timeout)
     sync.result[:cmd] = rsync.command
     
     puts

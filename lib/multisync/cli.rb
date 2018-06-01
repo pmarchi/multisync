@@ -28,8 +28,14 @@ class Multisync::Cli
       o.on('-p', '--print', "Print the commands without executing them") do
         options[:print] = true
       end
-      o.on('-f', '--catalog FILE', "Specify a catalog", "Default is #{options[:file]}") do |file|
+      o.on('-q', '--quiet', "Show only rsync summary") do
+        options[:quiet] = true
+      end
+      o.on('--catalog FILE', "Specify a catalog", "Default is #{options[:file]}") do |file|
         options[:file] = file
+      end
+      o.on('--timeout SECS', Integer, "Timeout for rsync job", "Default is #{options[:timeout]}") do |timeout|
+        options[:timeout] = timeout
       end
       o.on('-n', '--dryrun', "Run rsync in dry-run mode") do
         options[:dryrun] = true
@@ -107,7 +113,14 @@ class Multisync::Cli
   end
   
   def options
-    @_options ||= { list: false, print: false, dryrun: false, file: Multisync::Catalog.default_catalog_path }
+    @_options ||= { 
+      list: false,
+      print: false,
+      dryrun: false,
+      quiet: false,
+      file: Multisync::Catalog.default_catalog_path,
+      timeout: 31536000,
+    }
   end
   
   def table_style
