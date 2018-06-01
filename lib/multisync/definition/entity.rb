@@ -33,16 +33,23 @@ class Multisync::Definition::Entity
     @result = {}
   end
   
-  def to_s
+  def to_h
     {
       fullname: fullname,
-      source: source,
-      destination: destination,
-      rsync_options: rsync_options,
       default: default?,
-      check_source: check_source?,
-      check_destination: check_destination?,
-    }.to_s
+      source: {
+        path: source,
+        description: source_description,
+        check: check_source?,
+      },
+      destination: {
+        path: destination,
+        description: destination_description,
+        check: check_destination?,
+      },
+      checks: checks,
+      rsync_options: rsync_options,
+    }
   end
   
   # Make the definition visitable
