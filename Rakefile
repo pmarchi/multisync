@@ -1,7 +1,7 @@
 # require "bundler/gem_tasks"
 require "bundler_geminabox/gem_tasks"
+require "rspec/core/rake_task"
 
-desc 'clear pkg'
-task :clear do
-  rm_rf 'pkg'
-end
+RSpec::Core::RakeTask.new(:spec)
+
+task :default => :spec
