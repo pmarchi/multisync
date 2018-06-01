@@ -19,7 +19,7 @@ unless File.exist? CATALOG_FILE
 end
 
 
-options = { list: false, show: false, dryrun: false }
+options = { list: false, print: false, dryrun: false }
 parser = OptionParser.new do |o|
   o.banner = "\nRun rsync jobs defined in the catalog file '#{CATALOG_FILE}'.\n\n"+
              "Usage: #{File.basename $0} [options] [SET] [...]\n\n"+
@@ -33,8 +33,8 @@ parser = OptionParser.new do |o|
   o.on('-l', '--list', "List the catalog") do
     options[:list] = true
   end
-  o.on('-s', '--show', "Print the commands without executing them") do
-    options[:show] = true
+  o.on('-p', '--print', "Print the commands without executing them") do
+    options[:print] = true
   end
   o.on('-n', '--dryrun', "Run rsync in dry-run mode") do
     options[:dryrun] = true
@@ -47,20 +47,23 @@ sets = ARGV
 # List catalog
 catalog = Multisync::Catalog.load CATALOG_FILE
 if options[:list]
+  table = Terminal::Table.new(rows: catalog.list, style: { border_top: false,  border_bottom: false, border_x: '–', border_y: '', border_i: '', padding_left: 0, padding_right: 3 })
   puts
-  catalog.list
+  puts table
   puts
   exit
 end
 
 # Runtime handles "normal run", "dry run" and "show only command"
 runtime = Multisync::Runtime.new(options)
-catalog.select sets do |sync|
-  sync.run runtime
+
+tasks = catalog.filter(sets)
+tasks.each do |task|
+  runtime.run task
 end
-exit if runtime.results.empty?
+
 puts
-exit if options[:show]
+exit if options[:print]
 
 # Summarization
 table = Terminal::Table.new
@@ -69,29 +72,31 @@ table.style = {
   border_x: '–', border_y: '', border_i: '', 
   padding_left: 0, padding_right: 3,
 }
-table.headings = %w( Summary Files + - → ∑ ↑ ).zip(%i( left right right right right right right )).map{|v,a| {value: v, alignment: a} } 
+table.headings = %w( Source Destination Files + - → ∑ ↑ ).zip(%i( left left right right right right right right )).map{|v,a| {value: v, alignment: a} } 
 
-runtime.results.each do |result|
+tasks.each do |task|
+  result = task.result
+  desc = [task.source_description, "--> #{task.destination_description}"]
   case result[:action]
   when :run
     if result[:status].success?
       # successfull run
       stat = Multisync::RsyncStat.new(result[:stdout]).parse
       table.add_row [
-        result[:description],
+        *desc,
         *stat.to_a.map{|e| {value: e.color(:green), alignment: :right} }
       ]
     else
       # failed run
       table.add_row [
-        result[:description],
+        *desc,
         { value: result[:stderr].strip.color(:red), colspan: 6 }
       ]
     end
   when :skip
     # skiped sync
     table.add_row [
-      result[:description],
+      *desc,
       { value: result[:skip_message].color(:yellow), colspan: 6 }
     ]
   end

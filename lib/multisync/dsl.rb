@@ -3,36 +3,34 @@ module Multisync::Dsl
 
   # The DSL methods
   def group name, &block
-    Multisync::Group.new self, name, &block
+    Multisync::Entity.new self, name, &block
   end
   
   def sync name, &block
-    Multisync::Sync.new self, name, &block
+    Multisync::Entity.new self, name, &block
   end
   
-  def desc description
-    @description = description
-  end
-  
-  def from source, options={}
-    @source = source
+  def from value, options={}
+    @from_value = value
     # Check source's host or path before sync
-    @check_from = options[:check] unless options[:check].nil?
+    @from_check = options[:check]
+    @from_description = options[:description]
   end
   
-  def to destination, options={}
-    @destination = destination
+  def to value, options={}
+    @to_value = value
     # Check destination's host or path before sync
-    @check_to = options[:check] unless options[:check].nil?
+    @to_check = options[:check]
+    @to_description = options[:description]
   end
   
   def options rsync_options, mode=:append
     @rsync_options_mode = mode
-    @rsync_options = Array rsync_options
+    @rsync_options = Array(rsync_options)
   end
   
   def default
-    @default_set = true
+    @default = true
   end
   
   # Defines a check, that should pass in order to invoke the sync

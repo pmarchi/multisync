@@ -8,22 +8,8 @@ class Multisync::Runtime
   #   show: true|false
   attr_reader :options
   
-  # Array of collected result hashs
-  #  {
-  #    name: 'Source',
-  #    description: 'Source > Destination',
-  #    cmd: 'rsync --stats -v source destination',
-  #    action: :run,
-  #    result: #<Process::Status: pid 65416 exit 0>,
-  #    stdout: '',
-  #    stderr: '',
-  #    skip_message: 'host not reachable',
-  #  }
-  attr_reader :results
-  
   def initialize options
     @options = options
-    @results = []
   end
   
   def dryrun?
@@ -31,13 +17,10 @@ class Multisync::Runtime
   end
   
   def show_only?
-    options[:show]
+    options[:print]
   end
   
-  def rsync sync
-    result = { name: sync.name, description: sync.description }
-    results << result
-
+  def run sync
     rsync_options = sync.rsync_options.dup
     rsync_options.unshift *%w( --stats --verbose )
     rsync_options.unshift '--dry-run' if dryrun?
@@ -47,10 +30,10 @@ class Multisync::Runtime
     source, destination = [sync.source, sync.destination].map {|path| path.gsub(/\s+/, '\\ ') }
     cmd = "rsync #{rsync_options.join(' ')} #{source} #{destination}"
     rsync = Mixlib::ShellOut.new(cmd, live_stdout: $stdout, live_stderr: $stderr, timeout: 36000)
-    result[:cmd] = rsync.command
+    sync.result[:cmd] = rsync.command
     
     puts
-    puts sync.description.color(:cyan)
+    puts [sync.source_description, sync.destination_description].join(' --> ').color(:cyan)
     
     # Perform all only_if checks, from top to bottom
     sync.checks.each do |check|
@@ -58,38 +41,38 @@ class Multisync::Runtime
 
       puts check[:cmd] + ' (failed)'
       puts "Skip: ".color(:yellow) + rsync.command
-      result[:action] = :skip
-      result[:skip_message] = check[:message]
+      sync.result[:action] = :skip
+      sync.result[:skip_message] = check[:message]
       return
     end
     
     # source check
-    if sync.check_from? && ! check_path(sync.source, :source)
+    if sync.check_source? && ! check_path(sync.source, :source)
       puts "Source #{sync.source} is not accessible"
       puts "Skip: ".color(:yellow) + rsync.command
-      result[:action] = :skip
-      result[:skip_message] = "Source is not accessible"
+      sync.result[:action] = :skip
+      sync.result[:skip_message] = "Source is not accessible"
       return
     end
     
     # target check
-    if sync.check_to? && ! check_path(sync.destination, :destination)
+    if sync.check_destination? && ! check_path(sync.destination, :destination)
       puts "Destination #{sync.destination} is not accessible"
       puts "Skip: ".color(:yellow) + rsync.command
-      result[:action] = :skip
-      result[:skip_message] = "Destination is not accessible"
+      sync.result[:action] = :skip
+      sync.result[:skip_message] = "Destination is not accessible"
       return
     end
       
     if show_only?
       puts rsync.command
     else
-      result[:action] = :run
+      sync.result[:action] = :run
       puts rsync.command if dryrun?
       rsync.run_command
-      result[:status] = rsync.status
-      result[:stdout] = rsync.stdout
-      result[:stderr] = rsync.stderr
+      sync.result[:status] = rsync.status
+      sync.result[:stdout] = rsync.stdout
+      sync.result[:stderr] = rsync.stderr
     end
   end
   

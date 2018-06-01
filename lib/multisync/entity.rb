@@ -11,53 +11,73 @@ class Multisync::Entity
   
   # All members (groups or syncs) of this group
   attr_reader :members
+  
+  # Collected results after run as Hash
+  #  {
+  #    cmd: 'rsync --stats -v source destination',
+  #    action: :run,
+  #    status: #<Process::Status: pid 65416 exit 0>,
+  #    stdout: '',
+  #    stderr: '',
+  #    skip_message: 'host not reachable',
+  #  }
+  
+  attr_reader :result
 
-  def initialize parent=Multisync::Toplevel.new, name=:root, &block
-    @parent = parent
-    @name = name.to_s
+  def initialize parent, name, &block
     @members = []
+    @name = name.to_s
+    @parent = parent
     parent.register self
     instance_eval(&block) if block_given?
+    @result = {}
+  end
+  
+  def to_s
+    {
+      fullname: fullname,
+      source: source,
+      destination: destination,
+      rsync_options: rsync_options,
+      default: default?,
+      check_source: check_source?,
+      check_destination: check_destination?,
+    }.to_s
+  end
+  
+  # Make the definition visitable
+  def accept visitor, level=0
+    visitor.visit self, level
+    members.map do |member|
+      member.accept visitor, level+1
+    end
   end
   
   def register member
     members << member
   end
   
-  def list level=0
-    if level > 0
-      print ''.ljust(2*(level-1), ' ')
-      n = (default_set? ? name + ' *' : name)
-      print n.color(:cyan)
-      print " #{''.ljust(30-2*level-n.length, ' ')} #{description}" unless description == name
-      puts
-    end
-    members.map {|m| m.list level+1}
-  end
-  
-  def dump
-    puts fullname
-    members.map(&:dump)
-  end
-
   # The name including all parents separated by "/"
   def fullname
     [parent.fullname, name].join '/'
   end
   
-  # A description for the entity
-  def description
-    @description || name
-  end
-  
   # rsync source
   def source
-    @source || parent.source
+    @from_value || parent.source
+  end
+  
+  def source_description
+    @from_description || @from_value || parent.source_description
   end
   
   # rsync destination
   def destination
-    @destination || parent.destination
+    @to_value || parent.destination
+  end
+  
+  def destination_description
+    @to_description || @to_value || parent.destination_description
   end
   
   # rsync options
@@ -68,8 +88,8 @@ class Multisync::Entity
   end
   
   # Is this group/sync defined as default
-  def default_set?
-    @default_set || parent.default_set?
+  def default?
+    @default || parent.default?
   end
   
   # All checks from parent to child
@@ -78,12 +98,12 @@ class Multisync::Entity
   end
   
   # Should source's host or path be checked before sync?
-  def check_from?
-    @check_from.nil? ? parent.check_from? : @check_from
+  def check_source?
+    @from_check.nil? ? parent.check_source? : @from_check
   end
   
   # Should destination's host or path be checked before sync?
-  def check_to?
-    @check_to.nil? ? parent.check_to? : @check_to
+  def check_destination?
+    @to_check.nil? ? parent.check_destination? : @to_check
   end
 end
