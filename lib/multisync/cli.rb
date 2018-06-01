@@ -58,6 +58,7 @@ class Multisync::Cli
   end
   
   def list_definitions
+    puts "Catalog: #{options[:file].color(:cyan)}"
     table = Terminal::Table.new(rows: catalog.list, style: table_style)
     puts
     puts table
