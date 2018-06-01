@@ -1,27 +1,13 @@
 #!/usr/bin/env ruby
 
-require 'multisync'
-
 require 'optparse'
 require 'rainbow/ext/string'
 require 'terminal-table'
+require 'multisync'
 
-CATALOG_FILE = File.expand_path '~/.multisync.rb'
-
-unless File.exist? CATALOG_FILE
-  require 'fileutils'
-  FileUtils.cp File.expand_path('../../sample/multisync.rb', __FILE__), CATALOG_FILE
-  puts
-  puts "Sample catalog file has been created at #{CATALOG_FILE}."
-  puts "Adjust configuration to your needs."
-  puts
-  exit
-end
-
-
-options = { list: false, print: false, dryrun: false }
+options = { list: false, print: false, dryrun: false, file: Multisync::Catalog.default_catalog_path }
 parser = OptionParser.new do |o|
-  o.banner = "\nRun rsync jobs defined in the catalog file '#{CATALOG_FILE}'.\n\n"+
+  o.banner = "\nRun rsync jobs defined in the catalog file '#{Multisync::Catalog.default_catalog_path}'.\n\n"+
              "Usage: #{File.basename $0} [options] [SET] [...]\n\n"+
              "       SET selects a section from the catalog (see option -l)\n"+
              "       use / as a follow:\n"+
@@ -36,6 +22,9 @@ parser = OptionParser.new do |o|
   o.on('-p', '--print', "Print the commands without executing them") do
     options[:print] = true
   end
+  o.on('-f', '--catalog FILE', "Specify a catalog", "Default is #{Multisync::Catalog.default_catalog_path}") do |file|
+    options[:file] = file
+  end
   o.on('-n', '--dryrun', "Run rsync in dry-run mode") do
     options[:dryrun] = true
   end
@@ -45,7 +34,7 @@ parser.parse!
 sets = ARGV
 
 # List catalog
-catalog = Multisync::Catalog.load CATALOG_FILE
+catalog = Multisync::Catalog.new options[:file]
 if options[:list]
   table = Terminal::Table.new(rows: catalog.list, style: { border_top: false,  border_bottom: false, border_x: '–', border_y: '', border_i: '', padding_left: 0, padding_right: 3 })
   puts
