@@ -1,9 +1,17 @@
 
 # multisync
-## v0.3.0 (2018-06-01)
-- desc removed from DSL
-- from accepts a description option
-- to accepts a description option
+
+## v0.3.1 (2018-06-01)
+Changes in DSL
+- removed "desc"
+- "from" accepts a description option
+- "to"" accepts a description option
+- New: "template" and "include"
+
+Changes in CLI
+- New: timeout option
+- New: quiet option
+- polished output
 
 ## v0.2.4 (2017-09-23)
 - Fix: check command
