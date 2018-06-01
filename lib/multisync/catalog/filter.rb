@@ -19,7 +19,7 @@ class Multisync::Catalog::Filter
     # only return the leaves of the definition tree
     return false unless subject.members.empty?
     # no sets defined, but subject is in the default set
-    return true if sets.empty? && subject.default_set?
+    return true if sets.empty? && subject.default?
     # subject matches any of the given sets
     sets.any? {|set| /\b#{set}\b/.match subject.fullname }
   end

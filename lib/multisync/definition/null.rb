@@ -1,5 +1,5 @@
 
-class Multisync::EntityNull < Multisync::Entity
+class Multisync::Definition::Null < Multisync::Definition::Entity
   
   def initialize
   end

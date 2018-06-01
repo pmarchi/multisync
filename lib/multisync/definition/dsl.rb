@@ -1,13 +1,13 @@
 
-module Multisync::Dsl
+module Multisync::Definition::Dsl
 
   # The DSL methods
   def group name, &block
-    Multisync::Entity.new self, name, &block
+    Multisync::Definition::Entity.new self, name, &block
   end
   
   def sync name, &block
-    Multisync::Entity.new self, name, &block
+    Multisync::Definition::Entity.new self, name, &block
   end
   
   def from value, options={}

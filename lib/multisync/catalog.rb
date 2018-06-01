@@ -11,7 +11,7 @@ class Multisync::Catalog
   end
   
   def load file
-    @top = Multisync::Entity.new(Multisync::EntityNull.new, '__MAIN__')
+    @top = Multisync::Definition::Entity.new(Multisync::Definition::Null.new, '__MAIN__')
     top.instance_eval(File.read(file))
     self
   end

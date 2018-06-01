@@ -1,7 +1,7 @@
 
-class Multisync::Entity
+class Multisync::Definition::Entity
   
-  include Multisync::Dsl
+  include Multisync::Definition::Dsl
 
   # The parent of the group
   attr_reader :parent
