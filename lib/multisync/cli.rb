@@ -13,14 +13,11 @@ class Multisync::Cli
   
   def parser
     OptionParser.new do |o|
-      o.banner = "\nRun rsync jobs defined in the catalog file '#{options[:file]}'.\n\n"+
-                 "Usage: #{File.basename $0} [options] [SET] [...]\n\n"+
-                 "       SET selects a section from the catalog (see option -l)\n"+
-                 "       use / as a follow:\n"+
-                 "       work/pictures to specify the sync defined in the group work and\n"+
-                 "       home/pictures to specify the sync defined in the group home\n"+
-                 "       pictures alone will select both syncs, the one in the group work\n"+
-                 "       as well as the one in the group home"
+      o.banner = "\nRun rsync jobs defined in the catalog file '#{options[:file]}'.\n\n" +
+                 "Usage: #{File.basename $0} [options] [SET] [...]\n\n" +
+                 "       SET selects a section from the catalog (see option -l)\n" +
+                 "       use / as a group/task separator.\n" +
+                 "       e.g. #{File.basename $0} nas/userdata"
       o.separator ''
       o.on('-l', '--list', "List the catalog") do
         options[:list] = true
@@ -120,7 +117,7 @@ class Multisync::Cli
       dryrun: false,
       quiet: false,
       file: Multisync::Catalog.default_catalog_path,
-      timeout: 31536000,
+      timeout: 31536000, # 1 year
     }
   end
   
