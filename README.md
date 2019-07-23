@@ -1,4 +1,4 @@
-[![Gem Version](https://badge.fury.io/rb/amaze.svg)](https://badge.fury.io/rb/multisync)
+[![Gem Version](https://badge.fury.io/rb/multisync.svg)](https://badge.fury.io/rb/multisync)
 
 # Multisync
 
