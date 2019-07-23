@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Patrick Marchi"]
   spec.email         = ["mail@patrickmarchi.ch"]
 
-  spec.summary       = %q{Manage rsync configurations in sets of rules.}
-  spec.description   = %q{Manage rsync configurations organized in groups with inherited options.}
+  spec.summary       = %q{DSL for rsync.}
+  spec.description   = %q{Multisync offers a DSL to organize sets of rsync tasks.}
   spec.homepage      = ""
   spec.license       = "MIT"
 
