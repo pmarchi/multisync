@@ -7,24 +7,28 @@ Multisync offers a DSL to organize sets of rsync tasks. It takes advantage of te
 
 ## Installation
 
-Add this line to your application's Gemfile:
-
-```ruby
-gem 'multisync'
-```
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
+Install multisync with:
 
     $ gem install multisync
 
 
 ## Usage
 
-TODO: Write usage instructions here
+In order to run multisync you first need a catalog file (default: `~/.multisync.rb`). Copy the [sample file](sample/multisync.rb) to `~/.multisync.rb` and use it as a starting point to adjust it to your needs.
+
+List your configuration (and check your catalog file for errors):
+
+    $ multisync -l
+
+
+Print out the rsync commands without executing them:
+
+    $ multisync -p
+
+
+Run a group or task defined in your catalog file:
+
+    $ multisync nas
 
 
 ## Development
