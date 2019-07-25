@@ -1,6 +1,6 @@
 [![Gem Version](https://badge.fury.io/rb/multisync.svg)](https://badge.fury.io/rb/multisync)
 
-# Multisync
+# multisync
 
 Multisync offers a DSL to organize sets of rsync tasks. It takes advantage of templates, groups and inheritance to simplify things.
 
