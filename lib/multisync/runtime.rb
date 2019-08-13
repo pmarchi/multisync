@@ -38,11 +38,15 @@ class Multisync::Runtime
     # special meaning for home, instead of passing it as literal char
     source, destination = [sync.source, sync.destination].map {|path| path.gsub(/\s+/, '\\ ') }
     cmd = "rsync #{rsync_options.join(' ')} #{source} #{destination}"
-    rsync = Mixlib::ShellOut.new(cmd, live_stdout: $stdout, live_stderr: $stderr, timeout: timeout)
+    cmd_options = { timeout: timeout }
+    cmd_options.merge!({live_stdout: $stdout, live_stderr: $stderr}) unless quiet?
+    rsync = Mixlib::ShellOut.new(cmd, cmd_options)
     sync.result[:cmd] = rsync.command
-    
-    puts
-    puts [sync.source_description, sync.destination_description].join(' --> ').color(:cyan)
+
+    unless quiet?
+      puts
+      puts [sync.source_description, sync.destination_description].join(' --> ').color(:cyan)
+    end
     
     # Perform all only_if checks, from top to bottom
     sync.checks.each do |check|
