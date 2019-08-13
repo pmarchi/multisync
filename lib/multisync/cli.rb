@@ -62,10 +62,14 @@ class Multisync::Cli
   end
   
   def run_tasks
-    tasks.each do |task|
-      runtime.run task
+    begin
+      tasks.each do |task|
+        runtime.run task
+      end
+      return if options[:print]
+    rescue Interrupt => e
+      $stderr.puts "\nAborted!".color(:red)
     end
-    return if options[:print]
     table = Terminal::Table.new(headings: summary_headings, rows: summary_data, style: table_style)
     puts
     puts
@@ -77,23 +81,29 @@ class Multisync::Cli
   end
   
   def summary_data
+    # Exclude tasks with an empty result (> not run) first
     tasks.map do |task|
       result = task.result
       desc = [task.source_description, "--> #{task.destination_description}"]
 
       case result[:action]
       when :run
-        if result[:status].success?
+        if result[:status] && result[:status].success?
           # successfull run
           stat = Multisync::RsyncStat.new(result[:stdout]).parse
           [*desc, *stat.to_a.map{|e| {value: e.color(:green), alignment: :right} } ]
         else
-          # failed run
-          [*desc, { value: result[:stderr].strip.color(:red), colspan: 6 } ]
+          # failed or interrupted run
+          [*desc, { value: (result[:stderr] || 'n/a').strip.color(:red), colspan: 6 } ]
         end
+
       when :skip
         # skiped sync
         [*desc, { value: result[:skip_message].color(:yellow), colspan: 6 } ]
+
+      else
+        # not executed
+        [*desc, { value: 'not executed'.faint, colspan: 6 } ]
       end
     end
   end
