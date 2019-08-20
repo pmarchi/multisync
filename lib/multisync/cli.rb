@@ -1,3 +1,4 @@
+
 require 'optparse'
 require 'rainbow/ext/string'
 require 'terminal-table'
@@ -43,74 +44,39 @@ class Multisync::Cli
   
   def start
     parser.parse!
-    @sets = ARGV
     options[:quiet] = false if options[:print]
     
-    case
-    when options[:list]
-      list_definitions
+    @sets = ARGV
+
+    if options[:list]
+      # List tasks
+      puts "Catalog: #{options[:file].color(:cyan)}"
+      puts
+      puts Multisync::List.new catalog
+
     else
-      run_tasks
-    end
-    puts
-  end
-  
-  def list_definitions
-    puts "Catalog: #{options[:file].color(:cyan)}"
-    table = Terminal::Table.new(rows: catalog.list, style: table_style)
-    puts
-    puts table
-  end
-  
-  def run_tasks
-    begin
-      tasks.each do |task|
-        runtime.run task
-      end
-      return if options[:print]
-    rescue Interrupt => e
-      $stderr.puts "\nAborted!".color(:red)
-    end
-    table = Terminal::Table.new(headings: summary_headings, rows: summary_data, style: table_style)
-    puts
-    puts
-    puts table
-  end
-  
-  def summary_headings
-    %w( Source Destination Files + - → ∑ ↑ ).zip(%i( left left right right right right right right )).map{|v,a| {value: v, alignment: a} }
-  end
-  
-  def summary_data
-    # Exclude tasks with an empty result (> not run) first
-    tasks.map do |task|
-      result = task.result
-      desc = [task.source_description, "--> #{task.destination_description}"]
-
-      case result[:action]
-      when :run
-        if result[:status] && result[:status].success?
-          # successfull run
-          stat = Multisync::RsyncStat.new(result[:stdout]).parse
-          [*desc, *stat.to_a.map{|e| {value: e.color(:green), alignment: :right} } ]
-        else
-          # failed or interrupted run
-          [*desc, { value: (result[:stderr] || 'n/a').strip.color(:red), colspan: 6 } ]
+      # Run tasks
+      return if tasks.empty?
+      begin
+        tasks.each do |task|
+          runtime.run task
         end
-
-      when :skip
-        # skiped sync
-        [*desc, { value: result[:skip_message].color(:yellow), colspan: 6 } ]
-
-      else
-        # not executed
-        [*desc, { value: 'not executed'.faint, colspan: 6 } ]
+      rescue Interrupt => e
+        $stderr.puts "\nAborted!".color(:red)
+      end
+      unless options[:print]
+        puts
+        puts
+        puts Multisync::Summary.new tasks
       end
     end
+
+    puts
   end
   
   def tasks
-    @_tasks ||= catalog.filter sets
+    @_tasks ||= Multisync::Selector.new(catalog, sets).tasks
+    # @_tasks ||= catalog.filter sets
   end
   
   def catalog
@@ -130,9 +96,5 @@ class Multisync::Cli
       file: Multisync::Catalog.default_catalog_path,
       timeout: 31536000, # 1 year
     }
-  end
-  
-  def table_style
-    { border_top: false,  border_bottom: false, border_x: '–', border_y: '', border_i: '', padding_left: 0, padding_right: 3 }
   end
 end

@@ -1,16 +1,26 @@
 
-class Multisync::Catalog::Filter
-  # selected sets
+class Multisync::Selector
+  
+  # Given catalog
+  attr_reader :catalog
+  
+  # Given set names
   attr_reader :sets
   
-  # selected subjects
+  # Selected tasks
   attr_reader :result
 
-  def initialize sets
-    @sets = Array(sets)
+  def initialize catalog, sets
+    @catalog = catalog
+    @sets = sets
     @result = []
   end
-
+  
+  def tasks
+    catalog.traverse self
+    result
+  end
+  
   def visit subject, _level
     result << subject if selected?(subject)
   end

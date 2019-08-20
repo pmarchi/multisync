@@ -1,8 +1,5 @@
 
 class Multisync::Catalog
-  autoload :List, 'multisync/catalog/list'
-  autoload :Filter, 'multisync/catalog/filter'
-  
   # top entity of definition
   attr_reader :definition
 
@@ -16,18 +13,10 @@ class Multisync::Catalog
     end
   end
   
-  def list
-    catalog_list = Multisync::Catalog::List.new
-    definition.accept(catalog_list)
-    catalog_list.result
+  def traverse visitor
+    definition.accept visitor
   end
   
-  def filter sets
-    catalog_filter = Multisync::Catalog::Filter.new sets
-    definition.accept(catalog_filter)
-    catalog_filter.result
-  end
-
   def path
     return @path if File.exist? @path
     sample_path = File.expand_path('../../../sample/multisync.rb', __FILE__)
