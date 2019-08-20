@@ -44,6 +44,7 @@ class Multisync::Cli
   def start
     parser.parse!
     @sets = ARGV
+    options[:quiet] = false if options[:print]
     
     case
     when options[:list]
