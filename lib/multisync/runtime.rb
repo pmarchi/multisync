@@ -81,7 +81,7 @@ class Multisync::Runtime
       puts rsync.command
     else
       sync.result[:action] = :run
-      puts rsync.command if dryrun?
+      puts rsync.command if dryrun? && !quiet?
       rsync.run_command
       sync.result[:status] = rsync.status
       sync.result[:stdout] = rsync.stdout
