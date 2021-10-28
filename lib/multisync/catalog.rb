@@ -1,12 +1,9 @@
-
 class Multisync::Catalog
-  # top entity of definition
-  attr_reader :definition
-
   def initialize path
     @path = File.expand_path(path)
   end
-  
+
+  # top entity of definition
   def definition
     @_definition ||= Multisync::Definition::Entity.new(Multisync::Definition::Null.new, '__MAIN__').tap do |e|
       e.instance_eval File.read(path)
