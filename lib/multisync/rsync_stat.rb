@@ -1,58 +1,100 @@
-
-require 'filesize'
+require "filesize"
 
 class Multisync::RsyncStat
-  
+
+  # Keep track of totals
+  def self.total
+    @total ||= Hash.new 0
+  end
+
+  # Sample output
+  #   ...
+  #   Number of files: 89,633 (reg: 59,322, dir: 30,311)
+  #   Number of created files: 356 (reg: 281, dir: 75)
+  #   Number of deleted files: 114 (reg: 101, dir: 13)
+  #   Number of regular files transferred: 344
+  #   Total file size: 546,410,522,192 bytes
+  #   Total transferred file size: 7,991,491,676 bytes
+  #   Literal data: 7,952,503,842 bytes
+  #   Matched data: 38,987,834 bytes
+  #   File list size: 3,063,808
+  #   File list generation time: 2.414 seconds
+  #   File list transfer time: 0.000 seconds
+  #   Total bytes sent: 7,957,645,803
+  #   Total bytes received: 101,299
+  #
+  #   sent 7,957,645,803 bytes  received 101,299 bytes  23,719,067.37 bytes/sec
+  #   total size is 546,410,522,192  speedup is 68.66
   def initialize output
     @output = output
   end
 
-  # Build an internal hash with normalized stats  
-  def parse
-    @stats = definitions.each_with_object({}) do |definition, stats|
-      value = scan[definition[:match]]
-      stats[definition[:key]] = value ? (definition[:coerce] ? definition[:coerce].call(value) : value) : definition[:default]
-    end
-    self
-  end
-  
-  # Scan output and return a hash
+  # extracted returns a hash with labels as keys and extracted strings as values
   #   {
-  #     "Number of files" => "35,648",
-  #     "Number of created files" => "0",
-  #     "Number of deleted files" => "0",
-  #     "Number of regular files transferred"=>"0",
+  #     "Number of files" => "35,648", 
+  #     "Number of created files" => "2,120", 
   #     ...
   #   }
-  def scan
-    @scan ||= @output.scan(/(#{definitions.map{|d| d[:match] }.join('|')}):\s+([,0-9]+)/).each_with_object({}) {|(k,v), o| o[k] = v }
+  def extracted
+    @extraced ||= @output.scan(/(#{labels.join('|')}):\s+([,0-9]+)/).to_h
   end
-  
-  def to_a
-    [
-      @stats[:files],
-      @stats[:created],
-      @stats[:deleted],
-      @stats[:transferred],
-      @stats[:file_size],
-      @stats[:transferred_size],
-    ]
+
+  # stats returns a hash with the follwing keys (and updates class total)
+  #   {
+  #     "Number of files" => 35648, 
+  #     "Number of created files" => 2120, 
+  #     "Number of deleted files" => 37,
+  #     "Number of regular files transferred" => 394,
+  #     "Total file size" => 204936349,
+  #     "Total transferred file size" => 49239,
+  #   }
+  def stats
+    @stats ||= labels.each_with_object({}) do |label, h|
+      value = extracted[label]&.delete(",").to_i
+
+      self.class.total[label] += value # update total
+      h[label] = value
+    end
   end
-  
-  def method_missing name
-    key = name.to_sym
-    return @stats[key] if @stats.keys.include? key
-    super
+
+  def labels
+    self.class.format_map.keys
   end
-  
-  def definitions
-    [
-      { key: :files, match: 'Number of files', coerce: ->(x) { x.gsub(',',"'") }, default: '0' },
-      { key: :created, match: 'Number of created files', coerce: ->(x) { x.gsub(',',"'") }, default: '0' },
-      { key: :deleted, match: 'Number of deleted files', coerce: ->(x) { x.gsub(',',"'") }, default: '0' },
-      { key: :transferred, match: 'Number of regular files transferred', coerce: ->(x) { x.gsub(',',"'") }, default: '0' },
-      { key: :file_size, match: 'Total file size', coerce: ->(x) { Filesize.new(x.gsub(',','').to_i).pretty }, default: '0 B' },
-      { key: :transferred_size, match: 'Total transferred file size', coerce: ->(x) { Filesize.new(x.gsub(',','').to_i).pretty }, default: '0 B' },
-    ]
+
+  def formatted_values
+    self.class.format_values do |label|
+      stats[label]
+    end
+  end
+
+  def self.formatted_totals
+    format_values do |label|
+      total[label]
+    end
+  end
+
+  def self.format_values
+    format_map.map do |label, format|
+      format.call(yield label)
+    end
+  end
+
+  def self.format_map
+    {
+      'Number of files' => to_numbers,
+      'Number of created files' => to_numbers,
+      'Number of deleted files' => to_numbers,
+      'Number of regular files transferred' => to_numbers,
+      'Total file size' => to_filesize,
+      'Total transferred file size' => to_filesize,
+    }
+  end
+
+  def self.to_numbers
+    ->(x) { x.to_s.gsub(/\B(?=(...)*\b)/, "'") }
+  end
+
+  def self.to_filesize
+    ->(x) { Filesize.new(x).pretty }
   end
 end

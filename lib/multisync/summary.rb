@@ -1,4 +1,3 @@
-
 class Multisync::Summary
   
   # All tasks to include in the summary
@@ -21,7 +20,6 @@ class Multisync::Summary
   end
   
   def data
-    # Exclude tasks with an empty result (> not run) first
     tasks.map do |task|
       result = task.result
       desc = [task.source_description, "--> #{task.destination_description}"]
@@ -30,8 +28,8 @@ class Multisync::Summary
       when :run
         if result[:status] && result[:status].success?
           # successfull run
-          stat = Multisync::RsyncStat.new(result[:stdout]).parse
-          [*desc, *stat.to_a.map{|e| {value: e.color(:green), alignment: :right} } ]
+          stats = Multisync::RsyncStat.new(result[:stdout])
+          [*desc, *stats.formatted_values.map{|e| {value: e.color(:green), alignment: :right} } ]
         else
           # failed or interrupted run
           [*desc, { value: (result[:stderr] || 'n/a').strip.color(:red), colspan: 6 } ]
@@ -45,7 +43,7 @@ class Multisync::Summary
         # not executed
         [*desc, { value: 'not executed'.faint, colspan: 6 } ]
       end
-    end
+    end.push ["Total".faint, "", *Multisync::RsyncStat.formatted_totals.map{|e| {value: e.faint, alignment: :right} } ]
   end
   
   def table_style
