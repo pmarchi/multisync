@@ -1,5 +1,10 @@
-source 'https://rubygems.org'
-source 'https://gems.patrickmarchi.ch'
+# frozen_string_literal: true
 
-# Specify your gem's dependencies in multisync.gemspec
+source "https://rubygems.org"
+
+# Specify your gem's dependencies in gitoc.gemspec
 gemspec
+
+gem "rake", "~> 13.0"
+
+gem "rspec", "~> 3.0"
