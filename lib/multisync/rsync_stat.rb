@@ -1,7 +1,6 @@
 require "filesize"
 
 class Multisync::RsyncStat
-
   # Keep track of totals
   def self.total
     @total ||= Hash.new 0
@@ -31,18 +30,18 @@ class Multisync::RsyncStat
 
   # extracted returns a hash with labels as keys and extracted strings as values
   #   {
-  #     "Number of files" => "35,648", 
-  #     "Number of created files" => "2,120", 
+  #     "Number of files" => "35,648",
+  #     "Number of created files" => "2,120",
   #     ...
   #   }
   def extracted
-    @extraced ||= @output.scan(/(#{labels.join('|')}):\s+([,0-9]+)/).to_h
+    @extraced ||= @output.scan(/(#{labels.join("|")}):\s+([,0-9]+)/).to_h
   end
 
   # stats returns a hash with the follwing keys (and updates class total)
   #   {
-  #     "Number of files" => 35648, 
-  #     "Number of created files" => 2120, 
+  #     "Number of files" => 35648,
+  #     "Number of created files" => 2120,
   #     "Number of deleted files" => 37,
   #     "Number of regular files transferred" => 394,
   #     "Total file size" => 204936349,
@@ -81,12 +80,12 @@ class Multisync::RsyncStat
 
   def self.format_map
     {
-      'Number of files' => to_numbers,
-      'Number of created files' => to_numbers,
-      'Number of deleted files' => to_numbers,
-      'Number of regular files transferred' => to_numbers,
-      'Total file size' => to_filesize,
-      'Total transferred file size' => to_filesize,
+      "Number of files" => to_numbers,
+      "Number of created files" => to_numbers,
+      "Number of deleted files" => to_numbers,
+      "Number of regular files transferred" => to_numbers,
+      "Total file size" => to_filesize,
+      "Total transferred file size" => to_filesize
     }
   end
 

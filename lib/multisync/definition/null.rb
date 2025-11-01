@@ -1,9 +1,7 @@
-
 class Multisync::Definition::Null < Multisync::Definition::Entity
-  
   def initialize
   end
-  
+
   def register member
   end
 
@@ -19,34 +17,33 @@ class Multisync::Definition::Null < Multisync::Definition::Entity
   def source
     raise "no source (from) defined"
   end
-  
+
   def source_description
-    ''
+    ""
   end
-  
+
   # to (destination) is a required option and should be set at least at root level
   def destination
     raise "no destination (to) defined"
   end
-  
+
   def destination_description
-    ''
+    ""
   end
-  
+
   def default?
     false
   end
-  
+
   def checks
     []
   end
 
   def check_source?
     false
-  end  
+  end
 
   def check_destination?
     false
   end
 end
-
