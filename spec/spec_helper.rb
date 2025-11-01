@@ -1,4 +1,5 @@
-require "bundler/setup"
+# frozen_string_literal: true
+
 require "multisync"
 
 RSpec.configure do |config|
