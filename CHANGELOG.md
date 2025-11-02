@@ -1,3 +1,13 @@
+## [0.4.0] - 2025-11-02
+
+- New CLI
+- List and start accept the same query argument to select the catalog tasks
+- New option to omit summary
+- New failure summary after task summary
+- Adjustment in output colors
+- Breaking change: to run tasks you must call multisync start
+
+
 ## [0.3.7] - 2021-10-28
 
 - Add grand total to summary
