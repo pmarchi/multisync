@@ -12,21 +12,13 @@ class Multisync::Runtime
     @options = options
   end
 
-  def dryrun?
-    options[:dryrun]
-  end
+  def dryrun? = options[:dryrun]
 
-  def show_only?
-    options[:print]
-  end
+  def show_only? = options[:print]
 
-  def quiet?
-    options[:quiet]
-  end
+  def quiet? = options[:quiet]
 
-  def timeout
-    options[:timeout]
-  end
+  def timeout = options[:timeout]
 
   def run sync
     rsync_options = sync.rsync_options.dup
@@ -55,8 +47,8 @@ class Multisync::Runtime
     sync.checks.each do |check|
       next unless Mixlib::ShellOut.new(check[:cmd]).run_command.error?
 
-      puts check[:cmd] + " (failed)"
-      puts as_skipped("Skip: ") + rsync.command
+      puts as_skipped("#{check[:cmd]} (failed)")
+      puts as_note("Skip: #{rsync.command}")
       sync.result[:action] = :skip
       sync.result[:skip_message] = check[:message]
       return false
@@ -64,8 +56,8 @@ class Multisync::Runtime
 
     # source check
     if sync.check_source? && !check_path(sync.source, :source)
-      puts "Source #{sync.source} is not accessible"
-      puts as_skipped("Skip: ") + rsync.command
+      puts as_skipped("Source #{sync.source} is not accessible")
+      puts as_note("Skip: #{rsync.command}")
       sync.result[:action] = :skip
       sync.result[:skip_message] = "Source is not accessible"
       return
@@ -73,8 +65,8 @@ class Multisync::Runtime
 
     # target check
     if sync.check_destination? && !check_path(sync.destination, :destination)
-      puts "Destination #{sync.destination} is not accessible"
-      puts as_skipped("Skip: ") + rsync.command
+      puts as_skipped("Destination #{sync.destination} is not accessible")
+      puts as_note("Skip: #{rsync.command}")
       sync.result[:action] = :skip
       sync.result[:skip_message] = "Destination is not accessible"
       return
@@ -102,9 +94,9 @@ class Multisync::Runtime
       host = path.split(":").first.split("@").last
       Mixlib::ShellOut.new("ping -o -t 1 #{host}").run_command.status.success?
     else
-      abs_path = File.expand_path path
-      abs_path = File.dirname abs_path if type == :destination
-      File.exist? abs_path
+      File.expand_path(path)
+        .then { (type == :destination) ? File.dirname(_1) : _1 }
+        .then { File.exist? _1 }
     end
   end
 end
