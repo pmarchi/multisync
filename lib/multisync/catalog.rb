@@ -5,9 +5,9 @@ class Multisync::Catalog
 
   # top entity of definition
   def definition
-    @definition ||= Multisync::Definition::Entity.new(Multisync::Definition::Null.new, "__MAIN__").tap do |e|
-      e.instance_eval File.read(path)
-    end
+    @definition ||= Multisync::Definition::Entity
+      .new(Multisync::Definition::Null.new, "")
+      .tap { _1.instance_eval File.read(path) }
   end
 
   def traverse visitor
