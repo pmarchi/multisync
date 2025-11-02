@@ -6,7 +6,7 @@ module Multisync::Colors
   end
 
   def as_main x
-    Rainbow(x).color(:cyan)
+    Rainbow(x).color(:aqua)
   end
 
   def as_skipped x
