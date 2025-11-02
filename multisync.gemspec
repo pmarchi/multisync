@@ -39,6 +39,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "filesize"
   spec.add_dependency "rainbow"
   spec.add_dependency "terminal-table"
+  spec.add_dependency "thor"
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html

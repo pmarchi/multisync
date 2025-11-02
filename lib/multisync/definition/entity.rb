@@ -1,16 +1,19 @@
 class Multisync::Definition::Entity
   include Multisync::Definition::Dsl
 
-  # The parent of the group
+  # The parent of the entity
   attr_reader :parent
 
-  # The name of the group
+  # The name of the entity
   attr_reader :name
 
-  # All members (groups or syncs) of this group
+  # The level of the entity
+  attr_reader :level
+
+  # All members (groups or syncs) of this entity
   attr_reader :members
 
-  # Collected results after run as Hash
+  # Collected result after run
   #  {
   #    cmd: 'rsync --stats -v source destination',
   #    action: :run,
@@ -24,37 +27,19 @@ class Multisync::Definition::Entity
 
   def initialize parent, name, &block
     @members = []
-    @name = name.to_s
+    @name = name
     @parent = parent
+    @level = parent.level + 1
     parent.register self
     instance_eval(&block) if block_given?
     @result = {}
   end
 
-  def to_h
-    {
-      fullname: fullname,
-      default: default?,
-      source: {
-        path: source,
-        description: source_description,
-        check: check_source?
-      },
-      destination: {
-        path: destination,
-        description: destination_description,
-        check: check_destination?
-      },
-      checks: checks,
-      rsync_options: rsync_options
-    }
-  end
-
   # Make the definition visitable
-  def accept visitor, level = 0
-    visitor.visit self, level
+  def accept visitor
+    visitor.visit self
     members.map do |member|
-      member.accept visitor, level + 1
+      member.accept visitor
     end
   end
 
@@ -64,7 +49,7 @@ class Multisync::Definition::Entity
 
   # The name including all parents separated by "/"
   def fullname
-    [parent.fullname, name].join "/"
+    [parent.fullname, name].reject(&:empty?).join("/")
   end
 
   # rsync source

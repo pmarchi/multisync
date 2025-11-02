@@ -1,42 +1,46 @@
-require "rainbow/ext/string"
-
 class Multisync::List
+  include Multisync::Colors
+
   # Given catalog
   attr_reader :catalog
 
   # Tasks
   attr_reader :tasks
 
-  def initialize catalog
-    @catalog = catalog
-    @tasks = []
+  def initialize tasks
+    @tasks = tasks
   end
 
   def to_s
-    catalog.traverse self
-    table.to_s
+    "\n" + table.to_s
   end
 
   def table
-    Terminal::Table.new(rows: tasks, style: table_style)
+    Terminal::Table.new(rows: rows, style: table_style)
   end
 
-  def visit subject, level
-    if level > 0
-      tab = "".ljust(2 * (level - 1), " ")
-      default = subject.default? ? " *" : ""
-      name = "#{tab}#{subject.name}#{default}"
-      tasks << [name, *description(subject).map(&:faint)]
-      # puts "#{name.ljust(32, " ")}#{description(subject)}"
+  def rows
+    tasks.map do |task|
+      next unless task.level > 0
+
+      indent = "".ljust(2 * (task.level - 1), " ")
+      default = task.default? ? as_note(" *") : ""
+      [
+        [indent, task.name, default].join,
+        *descriptions(task)
+      ]
     end
   end
 
-  def description subject
-    desc = [subject.source_description, subject.destination_description]
-    desc.any?(&:empty?) ? [] : [desc.first, ["--> ", desc.last].join]
+  def descriptions task
+    if [task.source_description, task.destination_description].any?(&:empty?)
+      ["", "", ""]
+    else
+      [task.source_description, "-->", task.destination_description].map(&method(:as_note))
+    end
   end
 
   def table_style
-    {border_top: false, border_bottom: false, border_x: "–", border_y: "", border_i: "", padding_left: 0, padding_right: 3}
+    {border_x: as_note("─"), border_y: "", border_i: "", border_top: false, border_bottom: false, padding_left: 0, padding_right: 3}
   end
 end

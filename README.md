@@ -26,17 +26,12 @@ In order to run multisync you first need a catalog file (default: `~/.multisync.
 
 List your configuration (and check your catalog file for errors):
 
-    $ multisync -l
+    $ multisync list [QUERY ...]
 
 
-Print out the rsync commands without executing them:
+Run the tasks defined in your catalog file:
 
-    $ multisync -p
-
-
-Run a group or task defined in your catalog file:
-
-    $ multisync nas
+    $ multisync start [QUERY ...]
 
 
 ## Development

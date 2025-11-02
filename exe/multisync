@@ -2,4 +2,4 @@
 
 require "multisync"
 
-Multisync::Cli.start
+Multisync::Cli.start ARGV

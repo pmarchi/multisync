@@ -1,102 +1,72 @@
-require "optparse"
-require "rainbow/ext/string"
+require "thor"
+require "rainbow"
 require "terminal-table"
 
-class Multisync::Cli
-  def self.start
-    new.start
+class Multisync::Cli < Thor
+  include Thor::Actions
+  include Multisync::Colors
+
+  def self.exit_on_failure? = true
+
+  class_option :catalog, aliases: "-f", default: Multisync::Catalog.default_catalog_path, desc: "Specify a custom catalog file"
+
+  desc "list [QUERY ...]", "List catalog tasks"
+  long_desc <<~LONGDESC
+    List catalog tasks
+
+    QUERY selects a section from the catalog (see list)
+    \x05use / as a group/task separator.
+    \x05e.g. #{File.basename $0} nas/userdata"
+  LONGDESC
+  method_option :all, aliases: "-a", type: :boolean, desc: "List all tasks"
+  def list *queries
+    queries = ["."] if options[:all]
+    tasks = Multisync::Selector.new(catalog, queries).tasks(parents: true)
+
+    puts "Catalog file: #{as_main(options[:catalog])}"
+    puts Multisync::List.new(tasks)
   end
 
-  # Given sets to run or empty
-  attr_reader :sets
+  desc "start [QUERY ...]", "Run catalog tasks"
+  long_desc <<~LONGDESC
+    Run catalog tasks
 
-  def parser
-    OptionParser.new do |o|
-      o.banner = <<~EOS
-        Run rsync jobs defined in the catalog file '#{options[:file]}'
+    QUERY selects a section from the catalog (see list)
+    \x05use / as a group/task separator.
+    \x05e.g. #{File.basename $0} nas/userdata"
+  LONGDESC
+  method_option :timeout, aliases: "-t", type: :numeric, default: 31536000, desc: "Timeout for single rsync task" # 1 year
+  method_option :print, aliases: "-p", type: :boolean, desc: "Print commands without executing"
+  method_option :quiet, aliases: "-q", type: :boolean, desc: "Run tasks quietly"
+  method_option :summary, type: :boolean, default: true, desc: "Show summary"
+  method_option :dryrun, aliases: "-n", type: :boolean, desc: "Run jobs in dry-run, don't make any changes"
+  def start *queries
+    tasks = Multisync::Selector.new(catalog, queries)
+      .tasks
+      # only leafs of the task tree can be executed
+      .select { _1.members.none? }
 
-        Usage: #{File.basename $0} [options] [SET] [...]
-
-                SET selects a section from the catalog (see option -l)
-                use / as a group/task separator.
-                e.g. #{File.basename $0} nas/userdata"
-      EOS
-
-      o.separator ""
-      o.on("-l", "--list", "List the catalog") do
-        options[:list] = true
-      end
-      o.on("-p", "--print", "Print the commands without executing them") do
-        options[:print] = true
-      end
-      o.on("-q", "--quiet", "Show only rsync summary") do
-        options[:quiet] = true
-      end
-      o.on("--catalog FILE", "Specify a catalog", "Default is #{options[:file]}") do |file|
-        options[:file] = file
-      end
-      o.on("--timeout SECS", Integer, "Timeout for rsync job", "Default is #{options[:timeout]}") do |timeout|
-        options[:timeout] = timeout
-      end
-      o.on("-n", "--dryrun", "Run rsync in dry-run mode") do
-        options[:dryrun] = true
-      end
-    end
+    # Run
+    tasks.each { runtime.run _1 }
+  rescue Interrupt
+    warn as_fail("\nAborted!")
+  ensure
+    # Summarize
+    puts Multisync::Summary.new(tasks) if options[:summary] && !options[:print]
   end
 
-  def start
-    parser.parse!
-    options[:quiet] = false if options[:print]
-
-    @sets = ARGV
-
-    if options[:list]
-      # List tasks
-      puts "Catalog: #{options[:file].color(:cyan)}"
-      puts
-      puts Multisync::List.new catalog
-
-    else
-      # Run tasks
-      return if tasks.empty?
-      begin
-        tasks.each do |task|
-          runtime.run task
-        end
-      rescue Interrupt
-        warn "\nAborted!".color(:red)
-      end
-      unless options[:print]
-        puts
-        puts
-        puts Multisync::Summary.new tasks
-      end
-    end
-
-    puts
+  desc "version", "Print version information"
+  def version
+    puts "multisync v#{Multisync::VERSION}"
   end
 
-  def tasks
-    @tasks ||= Multisync::Selector.new(catalog, sets).tasks
-    # @tasks ||= catalog.filter sets
-  end
+  private
 
   def catalog
-    @catalog ||= Multisync::Catalog.new options[:file]
+    @catalog ||= Multisync::Catalog.new options[:catalog]
   end
 
   def runtime
     @runtime ||= Multisync::Runtime.new(options)
-  end
-
-  def options
-    @options ||= {
-      list: false,
-      print: false,
-      dryrun: false,
-      quiet: false,
-      file: Multisync::Catalog.default_catalog_path,
-      timeout: 31536000 # 1 year
-    }
   end
 end

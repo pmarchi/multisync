@@ -1,12 +1,13 @@
 class Multisync::Definition::Null < Multisync::Definition::Entity
   def initialize
+    @level = -1
   end
 
   def register member
   end
 
   def fullname
-    nil
+    ""
   end
 
   def rsync_options
