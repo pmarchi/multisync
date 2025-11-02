@@ -82,6 +82,10 @@ class Multisync::Definition::Entity
     @default || parent.default?
   end
 
+  def executeable?
+    members.none?
+  end
+
   # All checks from parent to child
   def checks
     (parent.checks + [@check]).compact

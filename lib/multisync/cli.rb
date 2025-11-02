@@ -44,7 +44,7 @@ class Multisync::Cli < Thor
     tasks = Multisync::Selector.new(catalog, queries)
       .tasks
       # only leafs of the task tree can be executed
-      .select { _1.members.none? }
+      .select(&:executeable?)
 
     # Run
     tasks.each { runtime.run _1 }
