@@ -6,6 +6,7 @@ module Multisync
   class Error < StandardError; end
 
   autoload :Cli, "multisync/cli"
+  autoload :Colors, "multisync/colors"
   autoload :Definition, "multisync/definition"
   autoload :Catalog, "multisync/catalog"
   autoload :Selector, "multisync/selector"

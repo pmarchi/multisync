@@ -1,6 +1,8 @@
 require "mixlib/shellout"
 
 class Multisync::Runtime
+  include Multisync::Colors
+
   # Runtime options
   #   dryrun: true|false
   #   show: true|false
@@ -46,7 +48,7 @@ class Multisync::Runtime
 
     unless quiet?
       puts
-      puts [sync.source_description, sync.destination_description].join(" --> ").color(:cyan)
+      puts as_main([sync.source_description, sync.destination_description].join(" --> "))
     end
 
     # Perform all only_if checks, from top to bottom
@@ -54,16 +56,16 @@ class Multisync::Runtime
       next unless Mixlib::ShellOut.new(check[:cmd]).run_command.error?
 
       puts check[:cmd] + " (failed)"
-      puts "Skip: ".color(:yellow) + rsync.command
+      puts as_skipped("Skip: ") + rsync.command
       sync.result[:action] = :skip
       sync.result[:skip_message] = check[:message]
-      return
+      return false
     end
 
     # source check
     if sync.check_source? && !check_path(sync.source, :source)
       puts "Source #{sync.source} is not accessible"
-      puts "Skip: ".color(:yellow) + rsync.command
+      puts as_skipped("Skip: ") + rsync.command
       sync.result[:action] = :skip
       sync.result[:skip_message] = "Source is not accessible"
       return
@@ -72,7 +74,7 @@ class Multisync::Runtime
     # target check
     if sync.check_destination? && !check_path(sync.destination, :destination)
       puts "Destination #{sync.destination} is not accessible"
-      puts "Skip: ".color(:yellow) + rsync.command
+      puts as_skipped("Skip: ") + rsync.command
       sync.result[:action] = :skip
       sync.result[:skip_message] = "Destination is not accessible"
       return
