@@ -9,7 +9,7 @@ class Multisync::Summary
   end
 
   def to_s
-    ["", as_main("Summary"), table.to_s].join("\n")
+    ["", as_main("Summary"), table.to_s, failures].compact.join("\n")
   end
 
   def table
@@ -36,7 +36,8 @@ class Multisync::Summary
           [*desc, *stats.formatted_values.map { {value: as_success(_1), alignment: :right} }]
         else
           # failed or interrupted run
-          [*desc, as_message(as_fail(result[:stderr] || "n/a").strip)]
+          [*desc, as_message(as_fail("Failed, for more information see details below"))]
+          # [*desc, as_message(as_fail(result[:stderr] || "n/a").strip)]
         end
 
       when :skip
@@ -58,8 +59,29 @@ class Multisync::Summary
     )
   end
 
+  def failures
+    tasks
+      .select { _1.result[:action] == :run && !_1.result[:status]&.success? }
+      .flat_map do |task|
+        [
+          as_fail([task.source_description, task.destination_description].join(" --> ")),
+          message_or_nil(task.result[:stdout]),
+          message_or_nil(task.result[:stderr]),
+          ""
+        ].compact
+      end
+      # Add title if any failures
+      .tap { _1.unshift "\n#{as_main("Failures")}" if _1.any? }
+      # Return failures as string or nil
+      .then { _1.any? ? _1.join("\n") : nil }
+  end
+
   def as_message message
     {value: message, colspan: 6}
+  end
+
+  def message_or_nil message
+    (message.nil? || message.empty?) ? nil : message
   end
 
   def table_style
