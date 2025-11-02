@@ -24,9 +24,10 @@ class Multisync::List
       next unless task.level > 0
 
       indent = "".ljust(2 * (task.level - 1), " ")
+      name = task.executeable? ? task.name : "#{task.name}#{as_note("/")}"
       default = task.default? ? as_note(" *") : ""
       [
-        [indent, task.name, default].join,
+        [indent, name, default].join,
         *descriptions(task)
       ]
     end
